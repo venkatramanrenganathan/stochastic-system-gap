@@ -83,8 +83,6 @@ triangleInequalityDistanceLowerBound = zeros(1, M);
 
 % Loop for every frequency & compute the distance & its lower & upper bounds
 for k = 1:M
-    
-    % Display that we solving the frequency
     fprintf("Solving LP at frequency point %d / %d...\n", k, M);
 
     % Compute travel cost matrix
@@ -95,7 +93,7 @@ for k = 1:M
         end
     end
 
-    % Vectorize the cost
+    % Vectorize cost
     cost = D(:);
 
     % Marginal constraints
@@ -113,8 +111,9 @@ for k = 1:M
     end
 
     % Solve the Linear Program
+    objectiveFunction = cost;
     options = optimoptions('linprog', 'Display', 'none');
-    [gamma, fval] = linprog(cost, [], [], Aeq, beq, zeros(N^2, 1), [], options);
+    [gamma, fval] = linprog(objectiveFunction, [], [], Aeq, beq, zeros(N^2, 1), [], options);
 
     % Get the Wasserstein distance from the solution of LP
     type1WassersteinDistance(k) = fval;
@@ -125,15 +124,11 @@ for k = 1:M
     % Compute the distance between nominal models at frequency k
     nominalModelsDistance = computeGeodesicDistance(R1NominalValues(:, k), R2NominalValues(:, k));
 
-    % Deviation of first system from its nominal frequency response
-    system1DeviationFromNominal = mean(arrayfun(@(i) computeGeodesicDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:N));
-
-    % Deviation of second system from its nominal frequency response
-    system2DeviationFromNominal = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:N));
-
     % Compute distance lower bound via triangle inequality due to deviation
-    triangleInequalityDistanceLowerBound(k) = abs(nominalModelsDistance - system1DeviationFromNominal - system2DeviationFromNominal);
-
+    % Deviation of first system from its nominal fre
+    dev1 = mean(arrayfun(@(i) computeGeodesicDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:N));
+    dev2 = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:N));
+    triangleInequalityDistanceLowerBound(k) = abs(nominalModelsDistance - dev1 - dev2);
 end
 
 %% Plotting
