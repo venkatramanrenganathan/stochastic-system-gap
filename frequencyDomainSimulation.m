@@ -25,14 +25,14 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
 addpath(genpath('src'));
 
-% Parameters
-N = 100;   % number of frequency response samples at every frequency
-M = 1000;  % number of frequency points
+% Set parameters for frequency domain simulation 
+numSamples = 100;       % # of frequency response samples at every frequency
+numFrequencies = 1000;  % # of frequency points
 
 % Create discretised frequency space between [0.1, 100] with M points
-omegaMin = 0.01;                         % Minimum frequency
-omegaMax = 100;                          % Maximum frequency 
-Omega = linspace(omegaMin, omegaMax, M); % discretised frequency space
+omegaMin = 0.1;                                       % Minimum frequency
+omegaMax = 1000;                                      % Maximum frequency 
+Omega = linspace(omegaMin, omegaMax, numFrequencies); % discretised frequency space
 
 % Define nominal plant models for two different systems P1 & P2
 P1NominalModel = @(w) 1 ./ (1 + 0.5j * w);
@@ -43,17 +43,17 @@ P1NominalResponses = P1NominalModel(Omega);
 P2NominalResponses = P2NominalModel(Omega);
 
 % Placeholders to store N frequency response samples at each of the M frequency points
-P1Samples = zeros(N, M);
-P2Samples = zeros(N, M);
+P1Samples = zeros(numSamples, numFrequencies);
+P2Samples = zeros(numSamples, numFrequencies);
 
 % Define the perturbation scale
 perturbationFactor = 0.01; 
 
 % Generate frequency response samples
-for i = 1:N
+for i = 1:numSamples
     % Get a random complex perturbation for every frequency for both systems
-    ithSampleNoiseSystem1 = perturbationFactor * (randn(1, M) + 1j * randn(1, M));
-    ithSampleNoiseSystem2 = perturbationFactor * (randn(1, M) + 1j * randn(1, M));
+    ithSampleNoiseSystem1 = perturbationFactor * (randn(1, numFrequencies) + 1j * randn(1, numFrequencies));
+    ithSampleNoiseSystem2 = perturbationFactor * (randn(1, numFrequencies) + 1j * randn(1, numFrequencies));
     % Generate the ith sample at every frequency by combining the nominal  
     % response & the random perturbation
     P1Samples(i, :) = P1NominalResponses .* (1 + ithSampleNoiseSystem1);
@@ -61,13 +61,13 @@ for i = 1:N
 end
 
 % Placeholders for storing inverse stereographic projected quantities
-empiricalDistributionP1R = zeros(3, N, M);
-empiricalDistributionP2R = zeros(3, N, M);
-R1NominalValues = zeros(3, M);
-R2NominalValues = zeros(3, M);
+empiricalDistributionP1R = zeros(3, numSamples, numFrequencies);
+empiricalDistributionP2R = zeros(3, numSamples, numFrequencies);
+R1NominalValues = zeros(3, numFrequencies);
+R2NominalValues = zeros(3, numFrequencies);
 
 % Projection items from complex plane to Riemann sphere (R) for both systems
-for k = 1:M
+for k = 1:numFrequencies
     % Project distribution of frequency responses in complex field to R
     empiricalDistributionP1R(:, :, k) = inverseStereographicProjection(P1Samples(:, k).');
     empiricalDistributionP2R(:, :, k) = inverseStereographicProjection(P2Samples(:, k).');
@@ -77,20 +77,20 @@ for k = 1:M
 end
 
 % Place holders to store the computed distance quantities
-type1WassersteinDistance = zeros(1, M);
-upperBoundViaSupportDistance = zeros(1, M);
-triangleInequalityDistanceLowerBound = zeros(1, M);
+type1WassersteinDistance = zeros(1, numFrequencies);
+upperBoundViaSupportDistance = zeros(1, numFrequencies);
+triangleInequalityDistanceLowerBound = zeros(1, numFrequencies);
 
 % Loop for every frequency & compute the distance & its lower & upper bounds
-for k = 1:M
+for k = 1:numFrequencies
     
-    % Display that we solving the frequency
-    fprintf("Solving LP at frequency point %d / %d...\n", k, M);
+    % Display that we are solving the linear program at frequency k
+    fprintf("Solving LP at frequency %d / %d...\n", k, numFrequencies);
 
     % Compute travel cost matrix
-    D = zeros(N, N);
-    for i = 1:N
-        for j = 1:N
+    D = zeros(numSamples, numSamples);
+    for i = 1:numSamples
+        for j = 1:numSamples
             D(i, j) = computeGeodesicDistance(empiricalDistributionP1R(:, i, k), empiricalDistributionP2R(:, j, k));
         end
     end
@@ -99,22 +99,22 @@ for k = 1:M
     cost = D(:);
 
     % Marginal constraints
-    Aeq = zeros(2 * N, N^2);
-    beq = ones(2 * N, 1) / N;
+    Aeq = zeros(2 * numSamples, numSamples^2);
+    beq = ones(2 * numSamples, 1) / numSamples;
 
     % Row sums (P1)
-    for i = 1:N
-        Aeq(i, ((i-1)*N + 1):(i*N)) = 1;
+    for i = 1:numSamples
+        Aeq(i, ((i-1)*numSamples + 1):(i*numSamples)) = 1;
     end
 
     % Column sums (P2)
-    for j = 1:N
-        Aeq(N + j, j:N:end) = 1;
+    for j = 1:numSamples
+        Aeq(numSamples + j, j:numSamples:end) = 1;
     end
 
     % Solve the Linear Program
     options = optimoptions('linprog', 'Display', 'none');
-    [gamma, fval] = linprog(cost, [], [], Aeq, beq, zeros(N^2, 1), [], options);
+    [gamma, fval] = linprog(cost, [], [], Aeq, beq, zeros(numSamples^2, 1), [], options);
 
     % Get the Wasserstein distance from the solution of LP
     type1WassersteinDistance(k) = fval;
@@ -126,23 +126,42 @@ for k = 1:M
     nominalModelsDistance = computeGeodesicDistance(R1NominalValues(:, k), R2NominalValues(:, k));
 
     % Deviation of first system from its nominal frequency response
-    system1DeviationFromNominal = mean(arrayfun(@(i) computeGeodesicDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:N));
+    system1DeviationFromNominal = mean(arrayfun(@(i) computeGeodesicDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:numSamples));
 
     % Deviation of second system from its nominal frequency response
-    system2DeviationFromNominal = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:N));
+    system2DeviationFromNominal = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:numSamples));
 
     % Compute distance lower bound via triangle inequality due to deviation
     triangleInequalityDistanceLowerBound(k) = abs(nominalModelsDistance - system1DeviationFromNominal - system2DeviationFromNominal);
 
 end
 
-%% Plotting
+%% Plotting Code
+
+% Plot the type-q Gap-Wasssertein distance, its lower & upper bounds
 figure;
-plot(Omega, type1WassersteinDistance, 'b-', 'LineWidth', 2); hold on;
-plot(Omega, upperBoundViaSupportDistance, 'r--', 'LineWidth', 2);
-plot(Omega, triangleInequalityDistanceLowerBound, 'g-.', 'LineWidth', 2);
-xlabel('Frequency \omega (rad/s)', 'FontSize', 12);
-ylabel('Distance', 'FontSize', 12);
-title('Frequency-Domain Distances via Linear Programming', 'FontSize', 14);
-legend('Wasserstein-1 (LP)', 'Support Distance', 'Nominal Lower Bound');
-grid on;
+slx1 = semilogx(Omega, type1WassersteinDistance, 'b-'); hold on;
+slx2 = semilogx(Omega, upperBoundViaSupportDistance, 'r-');
+slx3 = semilogx(Omega, triangleInequalityDistanceLowerBound, '-');
+slx3.Color = 'magenta';
+yl1 = yline(max(type1WassersteinDistance),'b--','$\mathrm{d}_{1}(P_1, P_2)$', 'Interpreter','latex');
+yl2 = yline(max(upperBoundViaSupportDistance),'r--','$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Interpreter','latex');
+yl3 = yline(max(triangleInequalityDistanceLowerBound),'m--','Best Lower Bound', 'Interpreter','latex');
+yl1.LabelHorizontalAlignment = 'center';
+yl2.LabelHorizontalAlignment = 'left';
+yl3.LabelHorizontalAlignment = 'left';
+yl1.FontSize = 30;
+yl2.FontSize = 30;
+yl3.FontSize = 30;
+yl1.LineWidth = 8;
+yl2.LineWidth = 8;
+yl3.LineWidth = 8;
+xlabel('$\omega$ (rad/s)');
+ylabel('Distance between $P_1$ and $P_2$');
+legend('$W^{1}_{1}\left(P_{R_{1}}(\omega), P_{R_{2}}(\omega)\right)$', '$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2, \omega)$', 'Lower Bound at $\omega$', 'Location','southeast');
+a = findobj(gcf, 'type', 'axes');
+h = findobj(gcf, 'type', 'line');
+set(h, 'linewidth', 8);
+set(a, 'linewidth', 8);
+set(a, 'FontSize', 70);
+set(gca,'fontweight','bold');
