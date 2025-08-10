@@ -1,3 +1,25 @@
 # Distance Between Stochastic Linear Systems 
+This repository contains the code to simulate and demonstrate distance measure between stochastic linear systems both in the frequency domain and time domain settings. 
+
+ **Associated Paper:** Venkatraman Renganathan, `Distance Between Stochastic Linear Systems`, Submitted to the SIAM Journal on Control & Optimization, 2025.
+
+## Dependencies
+- Matlab
+
+## Information about code
+There are three main coding files:
+1. `frequentDomainSimulation.m` 
+2. `timeDomainSimulation.m`
+
+## Steps to Run the Code 
+1. While running any of the above two coding files, set the parameters of the nominal plant accordingly
+2. Similarly set the distribution information (mean, standard deviation, covariance) about the parameter theta.
+3. Find the interested quantity and compare it against the lower/upper bound from the theory in the paper.
+
+## Author Information
+1. Venkatraman Renganathan, Cranfield University, Email: v.renganathan@cranfield.ac.uk
+   
+# Affiliation
+Venkatraman Renganathan is associated with the faculty of engineering and applied sciences at Cranfield University, UK. 
 
 
