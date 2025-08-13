@@ -119,8 +119,12 @@ for k = 1:numFrequencies
     % Get the Wasserstein distance from the solution of LP
     type1WassersteinDistance(k) = fval;
 
-    % Support distance
-    upperBoundViaSupportDistance(k) = max(D(:));
+    % Directed distance
+    hAB = max(min(D, [], 2));  % max over A of min over B
+    hBA = max(min(D, [], 1));  % max over B of min over A
+
+    % Support Hausdorff distance
+    upperBoundViaSupportDistance(k) = max(hAB, hBA);
 
     % Compute the distance between nominal models at frequency k
     nominalModelsDistance = computeGeodesicDistance(R1NominalValues(:, k), R2NominalValues(:, k));
@@ -132,9 +136,15 @@ for k = 1:numFrequencies
     system2DeviationFromNominal = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:numSamples));
 
     % Compute distance lower bound via triangle inequality due to deviation
-    triangleInequalityDistanceLowerBound(k) = abs(nominalModelsDistance - system1DeviationFromNominal - system2DeviationFromNominal);
+    % with q = 1
+    triangleInequalityDistanceLowerBound(k) = max(nominalModelsDistance - system1DeviationFromNominal - system2DeviationFromNominal, 0);
 
 end
+
+%% Display Results
+fprintf('Distance Upper Bound = %.4f\n', max(upperBoundViaSupportDistance));
+fprintf('Type-1 Wasserstein Distance = %.4f\n', max(type1WassersteinDistance));
+fprintf('Distance Lower Bound = %.4f\n', max(triangleInequalityDistanceLowerBound));
 
 %% Plotting Code
 
@@ -163,5 +173,5 @@ a = findobj(gcf, 'type', 'axes');
 h = findobj(gcf, 'type', 'line');
 set(h, 'linewidth', 8);
 set(a, 'linewidth', 8);
-set(a, 'FontSize', 70);
+set(a, 'FontSize', 50);
 set(gca,'fontweight','bold');
