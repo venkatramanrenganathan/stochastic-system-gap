@@ -121,7 +121,7 @@ gap_nom = gapmetric(sys_nom1, sys_nom2);
 % Mean deviation from nominal
 dev1 = mean(arrayfun(@(i) gapmetric(sys1_set{i}, sys_nom1), 1:N));
 dev2 = mean(arrayfun(@(j) gapmetric(sys2_set{j}, sys_nom2), 1:N));
-gap_lower = abs(gap_nom - dev1 - dev2);
+gap_lower = max(gap_nom - dev1 - dev2, 0);
 
 %% Plot
 figure;
