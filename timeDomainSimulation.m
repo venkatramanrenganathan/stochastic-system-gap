@@ -11,7 +11,7 @@
 %
 % Email: v.renganathan@cranfield.ac.uk
 %
-% Date last updated: 06 August, 2025.
+% Date last updated: 14 August, 2025.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,112 +25,139 @@ set(groot,'defaulttextinterpreter','latex');
 set(groot,'defaultLegendInterpreter','latex');
 addpath(genpath('src'));
 
-%% Parameters
-n = 2; m = 1; l = 1;
-p = 4;        % number of uncertain parameters
+%% Set simulation parameters
+n = 2;       % state dimension 
+m = 1;       % control dimension
+l = 1;       % output dimension
+d = 4;       % number of uncertain parameters
 N = 50;      % number of samples 
 
-%% Nominal systems (distinct)
+% Define matrices for nominal system models
+% System 1
 A1_0 = [0 1; -2 -0.5];
 B1_0 = [0; 1];
 C1_0 = [1 0];
 D1_0 = 0;
-
-A2_0 = [-3.2178  1.2354;
-        -1.7812   -2.6507];
+% System 2
+A2_0 = [-3.2178  1.2354; -1.7812   -2.6507];
 B2_0 = [0; 1];
 C2_0 = [1 0];
 D2_0 = 0;
 
-%% Affine perturbation directions
-rng(42);
-for j = 1:p
-    A1_j(:,:,j) = randn(n)*0.01;
-    B1_j(:,:,j) = randn(n,m)*0.01;
-    C1_j(:,:,j) = randn(l,n)*0.01;
+% Form the nominal state space models
+system1NominalModel = ss(A1_0, B1_0, C1_0, D1_0);
+system2NominalModel = ss(A2_0, B2_0, C2_0, D2_0);
 
-    A2_j(:,:,j) = randn(n)*0.01;
-    B2_j(:,:,j) = randn(n,m)*0.01;
-    C2_j(:,:,j) = randn(l,n)*0.01;
+% Nominal gap metric
+gapBetweenNominalModels = gapmetric(system1NominalModel, system2NominalModel);
+
+% Initialize the random number generator to make the results repeatable
+rng(0,'twister');
+
+% Set affine perturbation directions
+for k = 1:d
+    A1_k(:,:,k) = randn(n);
+    B1_k(:,:,k) = randn(n,m);
+    C1_k(:,:,k) = randn(l,n);
+
+    A2_k(:,:,k) = randn(n);
+    B2_k(:,:,k) = randn(n,m);
+    C2_k(:,:,k) = randn(l,n);
 end
 
 %% Random Gaussian parameters
-theta1 = randn(p, N);
-theta2 = randn(p, N);
+meanThetaSystem1 = 0.01;
+meanThetaSystem2 = 0.05;
+sigmaThetaSystem1 = 0.01;
+sigmaThetaSystem2 = 0.05;
+thetaSystem1 = sigmaThetaSystem1.*randn(d, N) + meanThetaSystem1;
+thetaSystem2 = sigmaThetaSystem2.*randn(d, N) + meanThetaSystem2;
 
-%% Generate perturbed state-space models
-sys1_set = cell(1, N);
-sys2_set = cell(1, N);
+% Storage for N samples of perturbed state-space models for each system
+system1PerturbedModels = cell(1, N);
+system2PerturbedModels = cell(1, N);
 
+% Generate N samples of perturbed state-space models for each system
 for i = 1:N
+
+    % Nominal Matrices
     A1 = A1_0; B1 = B1_0; C1 = C1_0;
     A2 = A2_0; B2 = B2_0; C2 = C2_0;
 
-    for j = 1:p
-        A1 = A1 + theta1(j,i)*A1_j(:,:,j);
-        B1 = B1 + theta1(j,i)*B1_j(:,:,j);
-        C1 = C1 + theta1(j,i)*C1_j(:,:,j);
-
-        A2 = A2 + theta2(j,i)*A2_j(:,:,j);
-        B2 = B2 + theta2(j,i)*B2_j(:,:,j);
-        C2 = C2 + theta2(j,i)*C2_j(:,:,j);
+    % Add affine perturbations to nominal system using randomized theta
+    for k = 1:d
+        A1 = A1 + thetaSystem1(k,i)*A1_k(:,:,k);
+        B1 = B1 + thetaSystem1(k,i)*B1_k(:,:,k);
+        C1 = C1 + thetaSystem1(k,i)*C1_k(:,:,k);
+        A2 = A2 + thetaSystem2(k,i)*A2_k(:,:,k);
+        B2 = B2 + thetaSystem2(k,i)*B2_k(:,:,k);
+        C2 = C2 + thetaSystem2(k,i)*C2_k(:,:,k);
     end
 
-    sys1_set{i} = ss(A1, B1, C1, D1_0);
-    sys2_set{i} = ss(A2, B2, C2, D2_0);
+    % Store the random perturbed model
+    system1PerturbedModels{i} = ss(A1, B1, C1, D1_0);
+    system2PerturbedModels{i} = ss(A2, B2, C2, D2_0);
 end
 
 %% Compute cost matrix using gap metric
-fprintf('Computing %d x %d gap metric cost matrix...\n', N, N);
-C = zeros(N, N);
+fprintf('Computing %d x %d gap metric based cost matrix...\n', N, N);
+gapCost = zeros(N, N);
 for i = 1:N
-    for j = 1:N
+    for k = 1:N
         try
-            C(i,j) = gapmetric(sys1_set{i}, sys2_set{j});
+            gapCost(i,k) = gapmetric(system1PerturbedModels{i}, system2PerturbedModels{k});
         catch
-            C(i,j) = 1; % Max gap if unstable or error
+            % Set max gap = 1 if system is unstable or error
+            gapCost(i,k) = 1; 
         end
     end
 end
 
-%% Setup and solve optimal transport LP
-f = C(:);
-Aeq = zeros(2*N, N^2);
+% Setup the optimal transport linear program
+% Placeholder for constraints
+Aeq = zeros(2*N, N^2);          
 beq = ones(2*N,1)/N;
 
+% Constraints 
 for i = 1:N
     Aeq(i, (i-1)*N + (1:N)) = 1;
 end
 
-for j = 1:N
-    Aeq(N+j, j:N:end) = 1;
+for k = 1:N
+    Aeq(N+k, k:N:end) = 1;
 end
 
+% Set the objective function
+objectiveFunction = gapCost(:);
+
+% Solve the optimal transport linear program
 options = optimoptions('linprog','Display','none');
-[xopt, fval] = linprog(f, [], [], Aeq, beq, zeros(N^2,1), [], options);
-wass_gap = fval;
+[xopt, fval] = linprog(objectiveFunction, [], [], Aeq, beq, zeros(N^2,1), [], options);
 
-%% Support distance
-supp_gap = max(C(:));
+% Get the evaluated gap between systems
+type1WassersteinSystemGap = fval;
 
-%% Nominal gap metric
-sys_nom1 = ss(A1_0, B1_0, C1_0, D1_0);
-sys_nom2 = ss(A2_0, B2_0, C2_0, D2_0);
-gap_nom = gapmetric(sys_nom1, sys_nom2);
+% Compute upper bound using support distance
+systemsGapUpperBound = max(gapCost(:));
 
-% Mean deviation from nominal
-dev1 = mean(arrayfun(@(i) gapmetric(sys1_set{i}, sys_nom1), 1:N));
-dev2 = mean(arrayfun(@(j) gapmetric(sys2_set{j}, sys_nom2), 1:N));
-gap_lower = max(gap_nom - dev1 - dev2, 0);
+% Compute the mean deviation from nominal model for each system
+system1DeviationFromNominal = mean(arrayfun(@(i) gapmetric(system1PerturbedModels{i}, system1NominalModel), 1:N));
+system2DeviationFromNominal = mean(arrayfun(@(j) gapmetric(system2PerturbedModels{j}, system2NominalModel), 1:N));
+systemsGapLowerBound = max(gapBetweenNominalModels - system1DeviationFromNominal - system2DeviationFromNominal, 0);
 
-%% Plot
-figure;
-bar([gap_lower, wass_gap, supp_gap], 'FaceColor', 'flat');
-xticklabels({'Lower Bound', '$\mathrm{dist}_{\Sigma_1, \Sigma_2, \delta_{g}}$', 'Upper Bound'});
-ylabel('Distance Between $\Sigma_1$ and $\Sigma_2$'); 
-a = findobj(gcf, 'type', 'axes');
-h = findobj(gcf, 'type', 'line');
-set(h, 'linewidth', 8);
-set(a, 'linewidth', 8);
-set(a, 'FontSize', 45);
-set(gca,'fontweight','bold');
+%% Display Results
+fprintf('Distance Lower Bound = %.4f\n', systemsGapLowerBound);
+fprintf('Type-1 Wasserstein Distance = %.4f\n', type1WassersteinSystemGap);
+fprintf('Distance Upper Bound = %.4f\n', systemsGapUpperBound);
+
+% %% Plot
+% figure;
+% bar([systemsGapLowerBound, type1WassersteinSystemGap, systemsGapUpperBound], 'FaceColor', 'flat');
+% xticklabels({'Lower Bound', '$\mathrm{dist}_{\Sigma_1, \Sigma_2, \delta_{g}}$', 'Upper Bound'});
+% ylabel('Distance Between $\Sigma_1$ and $\Sigma_2$'); 
+% a = findobj(gcf, 'type', 'axes');
+% h = findobj(gcf, 'type', 'line');
+% set(h, 'linewidth', 8);
+% set(a, 'linewidth', 8);
+% set(a, 'FontSize', 45);
+% set(gca,'fontweight','bold');
