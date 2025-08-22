@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Function computeGeodesicDistance will return the geodesic distance 
+% Function computeDistance will return the geodesic/chordal distance 
 % between two points on the Riemann sphere
 %
 % INPUT:
@@ -20,8 +20,19 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function geoDistance = computeGeodesicDistance(r1, r2)
+function distance = computeDistance(r1, r2)
 
-geoDistance = 0.5 * real(acos(dot(r1, r2) ./ (vecnorm(r1) .* vecnorm(r2))));
+% Set distance choice: 1-chordal, 2-geodesic
+distanceChoice = 1;
+
+if(distanceChoice == 1)
+    % chordal distance
+    distance = norm(r1 - r2);
+else
+    % geodesic distance
+    sphereRadius = [0;0;0.5];
+    distance = 0.5 * real(acos(4*dot(r1-sphereRadius, r2-sphereRadius)));
+    %geoDistance = 0.5 * real(acos(dot(r1, r2) ./ (vecnorm(r1) .* vecnorm(r2))));
+end
 
 end

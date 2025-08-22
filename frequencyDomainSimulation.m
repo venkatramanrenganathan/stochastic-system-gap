@@ -11,7 +11,7 @@
 %
 % Email: v.renganathan@cranfield.ac.uk
 %
-% Date last updated: 14 August, 2025.
+% Date last updated: 22 August, 2025.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -91,7 +91,7 @@ for k = 1:numFrequencies
     D = zeros(numSamples, numSamples);
     for i = 1:numSamples
         for j = 1:numSamples
-            D(i, j) = computeGeodesicDistance(empiricalDistributionP1R(:, i, k), empiricalDistributionP2R(:, j, k));
+            D(i, j) = computeDistance(empiricalDistributionP1R(:, i, k), empiricalDistributionP2R(:, j, k));
         end
     end
 
@@ -119,21 +119,22 @@ for k = 1:numFrequencies
     % Get the Wasserstein distance from the solution of LP
     type1WassersteinDistance(k) = fval;
 
-    % Directed distance
-    hAB = max(min(D, [], 2));  % max over A of min over B
-    hBA = max(min(D, [], 1));  % max over B of min over A
+    % % Directed distance
+    % hAB = max(min(D, [], 2));  % max over A of min over B
+    % hBA = max(min(D, [], 1));  % max over B of min over A
 
     % Support Hausdorff distance
-    upperBoundViaSupportDistance(k) = max(hAB, hBA);
+    upperBoundViaSupportDistance(k) = max(D(:));
+    %upperBoundViaSupportDistance(k) = max(hAB, hBA);
 
     % Compute the distance between nominal models at frequency k
-    nominalModelsDistance = computeGeodesicDistance(R1NominalValues(:, k), R2NominalValues(:, k));
+    nominalModelsDistance = computeDistance(R1NominalValues(:, k), R2NominalValues(:, k));
 
     % Deviation of first system from its nominal frequency response
-    system1DeviationFromNominal = mean(arrayfun(@(i) computeGeodesicDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:numSamples));
+    system1DeviationFromNominal = mean(arrayfun(@(i) computeDistance(empiricalDistributionP1R(:, i, k), R1NominalValues(:, k)), 1:numSamples));
 
     % Deviation of second system from its nominal frequency response
-    system2DeviationFromNominal = mean(arrayfun(@(j) computeGeodesicDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:numSamples));
+    system2DeviationFromNominal = mean(arrayfun(@(j) computeDistance(empiricalDistributionP2R(:, j, k), R2NominalValues(:, k)), 1:numSamples));
 
     % Compute distance lower bound via triangle inequality due to deviation
     % with q = 1
@@ -150,13 +151,13 @@ fprintf('Distance Lower Bound = %.4f\n', max(triangleInequalityDistanceLowerBoun
 
 % Plot the type-q Gap-Wasssertein distance, its lower & upper bounds
 figure;
-slx1 = semilogx(Omega, type1WassersteinDistance, 'b-'); hold on;
-slx2 = semilogx(Omega, upperBoundViaSupportDistance, 'r-');
-slx3 = semilogx(Omega, triangleInequalityDistanceLowerBound, '-');
+slx1 = semilogx(Omega, type1WassersteinDistance, 'b-.'); hold on;
+slx2 = semilogx(Omega, upperBoundViaSupportDistance, 'r-.');
+slx3 = semilogx(Omega, triangleInequalityDistanceLowerBound, '-.');
 slx3.Color = 'magenta';
-yl1 = yline(max(type1WassersteinDistance),'b--','$\mathrm{d}_{1}(P_1, P_2)$', 'Interpreter','latex');
-yl2 = yline(max(upperBoundViaSupportDistance),'r--','$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Interpreter','latex');
-yl3 = yline(max(triangleInequalityDistanceLowerBound),'m--','Best Lower Bound', 'Interpreter','latex');
+yl1 = yline(max(type1WassersteinDistance),'b-','$\mathrm{d}_{1}(P_1, P_2)$', 'Interpreter','latex');
+yl2 = yline(max(upperBoundViaSupportDistance),'r-','$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Interpreter','latex');
+yl3 = yline(max(triangleInequalityDistanceLowerBound),'m-','Greatest Lower Bound', 'Interpreter','latex');
 yl1.LabelHorizontalAlignment = 'center';
 yl2.LabelHorizontalAlignment = 'left';
 yl3.LabelHorizontalAlignment = 'left';
@@ -166,8 +167,8 @@ yl3.FontSize = 30;
 yl1.LineWidth = 8;
 yl2.LineWidth = 8;
 yl3.LineWidth = 8;
-xlabel('$\omega$ (rad/s)');
-ylabel('Distance between $P_1$ and $P_2$');
+xlabel('frequency $\omega$ (rad/s)');
+ylabel('distance');
 legend('$W^{1}_{1}\left(P_{R_{1}}(\omega), P_{R_{2}}(\omega)\right)$', '$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2, \omega)$', 'Lower Bound at $\omega$', 'Location','southeast');
 a = findobj(gcf, 'type', 'axes');
 h = findobj(gcf, 'type', 'line');
