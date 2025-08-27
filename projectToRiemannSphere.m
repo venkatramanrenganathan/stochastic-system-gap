@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Function inverseStereographicProjection will return the coordinates of
+% Function projectToRiemannSphere will return the coordinates of
 % points on the Riemann sphere given a complex number
 %
 % INPUT:
-%      z: Complex number (real + j imag) 
+%      % z: N x 1 complex number vector; 
 % OUTPUT:
-%      r: 3D coordinate of point in Riemann sphere of radius 1/2 centered at (0,0,1/2)
+%      r: 3 x N matrix of 3D points
 %
 % Copyrights @ 2025
 % 
@@ -16,14 +16,16 @@
 %
 % Email: v.renganathan@cranfield.ac.uk
 %
-% Date last updated: 07 August, 2025.
+% Date last updated: 27 August, 2025.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function r = inverseStereographicProjection(z)
-
-r = [real(z) ./ (1 + abs(z).^2); ...
-     imag(z) ./ (1 + abs(z).^2); ...
-     abs(z).^2 ./ (1 + abs(z).^2)];
-
+function R = projectToRiemannSphere(z)
+    x = real(z(:)).'; 
+    y = imag(z(:)).'; 
+    r2 = x.^2 + y.^2;
+    X = x ./ (1 + r2);
+    Y = y ./ (1 + r2);
+    Z = r2 ./ (1 + r2);
+    R = [X; Y; Z]; 
 end
