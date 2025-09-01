@@ -1,7 +1,7 @@
 # Distance Between Stochastic Linear Systems 
 This repository contains the code to simulate and demonstrate distance measure between stochastic linear systems both in the frequency domain and time domain settings. 
 
- **Associated Paper:** Venkatraman Renganathan, `Distance Between Stochastic Linear Systems`, Submitted to the SIAM Journal on Control & Optimization, 2025.
+ **Associated Paper:** Venkatraman Renganathan and Sei Zhen Khong, `Distance Between Stochastic Linear Systems`, Submitted to the SIAM Journal on Control & Optimization, 2025.
 
 ## Dependencies
 - Matlab
