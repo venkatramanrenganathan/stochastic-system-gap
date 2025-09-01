@@ -17,6 +17,9 @@ There are three main coding files:
 2. Similarly set the distribution information (mean, standard deviation, covariance) about the parameter theta.
 3. Find the interested quantity and compare it against the lower/upper bound from the theory in the paper.
 
+## Caution
+1. Increasing the sample size (N - number of perturbed plant models) will increase the computation time significantly larger in the order of O(N^2). Hence, choose the sample size according to your available computation resources. 
+
 ## Author Information
 1. Venkatraman Renganathan, Cranfield University, UK. Email: v.renganathan@cranfield.ac.uk
 2. Sei Zhen Khong, National Sun Yat-Sen University, Taiwan. Email: szkhong@mail.nsysu.edu.tw
