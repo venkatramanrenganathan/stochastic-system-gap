@@ -10,9 +10,10 @@ This repository contains the code to simulate and demonstrate distance measure b
 There are three main coding files:
 1. `frequentDomainSimulation.m` 
 2. `timeDomainSimulation.m`
+3. `comparisonSimulation.m`
 
 ## Steps to Run the Code 
-1. While running any of the above two coding files, set the parameters of the nominal plant accordingly
+1. While running any of the first two coding files, set the parameters of the nominal plant accordingly.
 2. Similarly set the distribution information (mean, standard deviation, covariance) about the parameter theta.
 3. Find the interested quantity and compare it against the lower/upper bound from the theory in the paper.
 
