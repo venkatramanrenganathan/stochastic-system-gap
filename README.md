@@ -17,7 +17,8 @@ There are three main coding files:
 3. Find the interested quantity and compare it against the lower/upper bound from the theory in the paper.
 
 ## Author Information
-1. Venkatraman Renganathan, Cranfield University, Email: v.renganathan@cranfield.ac.uk
+1. Venkatraman Renganathan, Cranfield University, UK. Email: v.renganathan@cranfield.ac.uk
+2. Sei Zhen Khong, National Sun Yat-Sen University, Taiwan. Email: szkhong@mail.nsysu.edu.tw
    
 # Affiliation
 Venkatraman Renganathan is associated with the faculty of engineering and applied sciences at Cranfield University, UK. 
