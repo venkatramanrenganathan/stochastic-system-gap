@@ -22,6 +22,7 @@ There are three main coding files:
 2. Sei Zhen Khong, National Sun Yat-Sen University, Taiwan. Email: szkhong@mail.nsysu.edu.tw
    
 # Affiliation
-Venkatraman Renganathan is associated with the faculty of engineering and applied sciences at Cranfield University, UK. 
+1. Venkatraman Renganathan is associated with the faculty of engineering and applied sciences at Cranfield University, UK. 
+2. Sei Zhen Khong is associated with the department of electrical engineering at the National Sun Yat-Sen University, Taiwan.
 
 
