@@ -21,11 +21,11 @@ There are three main coding files:
 1. Increasing the sample size (N - number of perturbed plant models) will increase the computation time significantly larger in the order of O(N^2). Hence, choose the sample size according to your available computation resources. 
 
 ## Author Information
-1. Venkatraman Renganathan, Cranfield University, UK. Email: v.renganathan@cranfield.ac.uk
+1. Venkatraman Renganathan, IIT Hyderabad, India. Email: venkatraman@ai.iith.ac.in
 2. Sei Zhen Khong, National Sun Yat-Sen University, Taiwan. Email: szkhong@mail.nsysu.edu.tw
    
 # Affiliation
-1. Venkatraman Renganathan is associated with the faculty of engineering and applied sciences at Cranfield University, UK. 
+1. Venkatraman Renganathan is associated with the department of artificial intelligence at Indian Institute of Technology Hyderabad, India. 
 2. Sei Zhen Khong is associated with the department of electrical engineering at the National Sun Yat-Sen University, Taiwan.
 
 
