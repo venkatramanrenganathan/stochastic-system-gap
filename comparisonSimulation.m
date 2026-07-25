@@ -7,14 +7,14 @@
 % chordal metric on Riemann sphere followed by taking sup over omega
 % - Time domain distance is computed as Wasserstein-1 distance via gap metric
 %
-% Copyrights @ 2025
+% Copyrights @ 2026
 % 
 % Authors: Venkatraman Renganathan 
-%          Cranfield University, United Kingdom.
+%          IIT Hyderabad, India
 %
-% Email: v.renganathan@cranfield.ac.uk
+% Email: venkatraman@ai.iith.ac.in
 %
-% Date last updated: 27 August, 2025.
+% Date last updated: 25 July, 2026.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,8 +82,11 @@ nominalModelsGapDistance = gapmetric(nominalModelSystem1, nominalModelSystem2);
 % Generate sample of theta parameters from Gaussian distribution 
 sqrtCovarianceTheta1 = chol(covarianceTheta1, 'lower'); 
 sqrtCovarianceTheta2 = chol(covarianceTheta2, 'lower'); 
-theta1 = meanTheta1 + sqrtCovarianceTheta1*randn(p,N);
-theta2 = meanTheta2 + sqrtCovarianceTheta2*randn(p,N);
+%theta1 = meanTheta1 + sqrtCovarianceTheta1*randn(p,N);
+%theta2 = meanTheta2 + sqrtCovarianceTheta2*randn(p,N);
+
+theta1 = -0.1 + (0.1 - (-0.1)).*rand(p,N);
+theta2 = -0.1 + (0.1 - (-0.1)).*rand(p,N);
 
 % Build perturbed yet stable SS plant models for both systems 
 perturbedModelsSystem1 = cell(1,N); 

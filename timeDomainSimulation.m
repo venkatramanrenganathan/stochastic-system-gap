@@ -4,14 +4,14 @@
 % This code simulates to obtain distance between two linear stochastic
 % systems in the time domain setting
 %
-% Copyrights @ 2025
+% Copyrights @ 2026
 % 
 % Authors: Venkatraman Renganathan 
-%          Cranfield University, United Kingdom.
+%          IIT Hyderabad, India
 %
-% Email: v.renganathan@cranfield.ac.uk
+% Email: venkatraman@ai.iith.ac.in
 %
-% Date last updated: 22 August, 2025.
+% Date last updated: 25 July, 2026.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
