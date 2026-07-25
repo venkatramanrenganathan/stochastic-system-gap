@@ -4,14 +4,14 @@
 % This code simulates to obtain distance between two linear stochastic
 % systems in the frequency domain setting
 %
-% Copyrights @ 2025
+% Copyrights @ 2026
 % 
 % Authors: Venkatraman Renganathan 
-%          Cranfield University, United Kingdom.
+%          IIT Hyderabad, India
 %
-% Email: v.renganathan@cranfield.ac.uk
+% Email: venkatraman@ai.iith.ac.in
 %
-% Date last updated: 22 August, 2025.
+% Date last updated: 25 July, 2026.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,8 +52,8 @@ perturbationFactor = 0.01;
 % Generate frequency response samples
 for i = 1:numSamples
     % Get a random complex perturbation for every frequency for both systems
-    ithSampleNoiseSystem1 = perturbationFactor * (randn(1, numFrequencies) + 1j * randn(1, numFrequencies));
-    ithSampleNoiseSystem2 = perturbationFactor * (randn(1, numFrequencies) + 1j * randn(1, numFrequencies));
+    ithSampleNoiseSystem1 = perturbationFactor * (rand(1, numFrequencies) + 1j * rand(1, numFrequencies));
+    ithSampleNoiseSystem2 = perturbationFactor * (rand(1, numFrequencies) + 1j * rand(1, numFrequencies));
     % Generate the ith sample at every frequency by combining the nominal  
     % response & the random perturbation
     P1Samples(i, :) = P1NominalResponses .* (1 + ithSampleNoiseSystem1);
@@ -155,24 +155,28 @@ slx1 = semilogx(Omega, type1WassersteinDistance, 'b-.'); hold on;
 slx2 = semilogx(Omega, upperBoundViaSupportDistance, 'r-.');
 slx3 = semilogx(Omega, triangleInequalityDistanceLowerBound, '-.');
 slx3.Color = 'magenta';
-yl1 = yline(max(type1WassersteinDistance),'b-','$\mathrm{d}_{1}(P_1, P_2)$', 'Interpreter','latex');
-yl2 = yline(max(upperBoundViaSupportDistance),'r-','$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Interpreter','latex');
-yl3 = yline(max(triangleInequalityDistanceLowerBound),'m-','Greatest Lower Bound', 'Interpreter','latex');
+yl1 = yline(max(type1WassersteinDistance),'b-');
+yl2 = yline(max(upperBoundViaSupportDistance),'r-');
+yl3 = yline(max(triangleInequalityDistanceLowerBound),'m-');
+%yl1 = yline(max(type1WassersteinDistance),'b-','$\mathrm{d}_{1}(P_1, P_2)$', 'Interpreter','latex');
+%yl2 = yline(max(upperBoundViaSupportDistance),'r-','$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Interpreter','latex');
+%yl3 = yline(max(triangleInequalityDistanceLowerBound),'m-','Greatest Lower Bound', 'Interpreter','latex');
 yl1.LabelHorizontalAlignment = 'center';
 yl2.LabelHorizontalAlignment = 'left';
 yl3.LabelHorizontalAlignment = 'left';
-yl1.FontSize = 30;
-yl2.FontSize = 30;
-yl3.FontSize = 30;
-yl1.LineWidth = 8;
-yl2.LineWidth = 8;
-yl3.LineWidth = 8;
-xlabel('frequency $\omega$ (rad/s)');
-ylabel('distance');
-legend('$W^{1}_{1}\left(P_{R_{1}}(\omega), P_{R_{2}}(\omega)\right)$', '$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2, \omega)$', 'Lower Bound at $\omega$', 'Location','southeast');
+yl1.FontSize = 45;
+yl2.FontSize = 45;
+yl3.FontSize = 45;
+yl1.LineWidth = 4;
+yl2.LineWidth = 4;
+yl3.LineWidth = 4;
+xlabel('frequency $\omega$ (rad/s)', 'Interpreter','latex');
+ylabel('distance', 'Interpreter','latex');
+ylim([0, 0.32]);
+legend('$W^{1}_{1}\left(P_{R_{1}}(\omega), P_{R_{2}}(\omega)\right)$', '$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2, \omega)$', 'Lower Bound at $\omega$', '$\mathrm{d}_{1}(P_1, P_2)$', '$\mathrm{d^{\mathrm{R}}_{sup}}(P_1, P_2)$', 'Greatest Lower Bound', 'Location','northeast');
 a = findobj(gcf, 'type', 'axes');
 h = findobj(gcf, 'type', 'line');
-set(h, 'linewidth', 8);
-set(a, 'linewidth', 8);
-set(a, 'FontSize', 50);
+set(h, 'linewidth', 4);
+set(a, 'linewidth', 4);
+set(a, 'FontSize', 45);
 set(gca,'fontweight','bold');
