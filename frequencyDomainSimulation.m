@@ -29,7 +29,7 @@ addpath(genpath('src'));
 numSamples = 100;       % # of frequency response samples at every frequency
 numFrequencies = 1000;  % # of frequency points
 
-% Create discretised frequency space between [0.1, 100] with M points
+% Create discretised frequency space between [0.1, 1000] with numFrequencies points
 omegaMin = 0.1;                                       % Minimum frequency
 omegaMax = 1000;                                      % Maximum frequency 
 Omega = linspace(omegaMin, omegaMax, numFrequencies); % discretised frequency space
